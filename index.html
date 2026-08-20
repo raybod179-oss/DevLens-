@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>DevLens — پیدا کن، درک کن، حلش کن</title>
+
+  <meta
+    name="description"
+    content="DevLens خطاها، Stack Trace و کد را به‌صورت آفلاین در مرورگر تحلیل می‌کند و مشکل را به زبان ساده توضیح می‌دهد."
+  >
+
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <style>
+    /* =========================================
+       THEME VARIABLES
+    ========================================= */
+
+    :root {
+      --bg: #080a0f;
+      --bg-secondary: #0d1118;
+
+      --surface: #11161f;
+      --surface-hover: #161c26;
+
+      --border: #202733;
+      --border-hover: #2b3444;
+
+      --text: #f1f5f9;
+      --text-secondary: #9aa4b2;
+      --text-muted: #687384;
+
+      --accent: #6c9bff;
+      --accent-hover: #82aaff;
+
+      --success: #55d98b;
+      --warning: #ffb454;
+      --danger: #ff6678;
+
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+      --font-main: "Vazirmatn", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", "Vazirmatn", monospace;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f6f7f9;
+      --bg-secondary: #ffffff;
+
+      --surface: #ffffff;
+      --surface-hover: #f1f3f6;
+
+      --border: #dfe3e8;
+      --border-hover: #cbd2db;
+
+      --text: #111827;
+      --text-secondary: #596273;
+      --text-muted: #7b8492;
+
+      --accent: #3867d6;
+      --accent-hover: #2f5bc0;
+
+      --success: #159957;
+      --warning: #d88900;
+      --danger: #dc3545;
+
+      --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    /* =========================================
+       BASE
+    ========================================= */
+
+    html {
+      background: var(--bg);
+      color: var(--text);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
+    }
+
+    body,
+    button,
+    input,
+    textarea,
+    select {
+      font-family: var(--font-main);
+    }
+
+    code,
+    pre,
+    .editor-body,
+    .brand {
+      font-family: var(--font-mono);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* =========================================
+       HEADER
+    ========================================= */
+
+    .site-header {
+      background: color-mix(
+        in srgb,
+        var(--bg) 88%,
+        transparent
+      );
+
+      border-bottom: 1px solid var(--border);
+
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      white-space: nowrap;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-sub {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 400;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-inline: auto;
+    }
+
+    .main-nav a,
+    .mobile-nav a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: 0.2s ease;
+    }
+
+    .main-nav a:hover,
+    .mobile-nav a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =========================================
+       BUTTONS
+    ========================================= */
+
+    .btn {
+      min-height: 38px;
+      padding: 0 14px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--surface);
+      color: var(--text);
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+
+      font-size: 13px;
+      font-weight: 600;
+
+      transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-hover);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-ghost {
+      background: transparent;
+    }
+
+    .nav-toggle {
+      display: none;
+    }
+
+    .mobile-nav {
+      display: none;
+    }
+
+    /* =========================================
+       HERO
+    ========================================= */
+
+    .hero {
+      padding-top: 90px;
+      padding-bottom: 90px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 70px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 13px;
+    }
+
+    html[dir="rtl"] .eyebrow {
+      letter-spacing: 0;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+    }
+
+    html[dir="rtl"] .hero-title {
+      letter-spacing: 0;
+      line-height: 1.2;
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .hero-lede {
+      max-width: 680px;
+      margin: 26px 0 0;
+      color: var(--text-secondary);
+      line-height: 2;
+      font-size: 15px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hero-meta b {
+      color: var(--text);
+    }
+
+    /* =========================================
+       EDITOR
+    ========================================= */
+
+    .editor-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+
+      background: var(--surface);
+      box-shadow: var(--shadow);
+
+      direction: ltr;
+      text-align: left;
+    }
+
+    .editor-tabbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .editor-tab {
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .editor-tab.active {
+      color: var(--text);
+      border-bottom: 1px solid var(--accent);
+    }
+
+    .editor-body {
+      padding: 22px;
+      min-height: 210px;
+
+      font-size: 12px;
+      line-height: 2;
+      color: var(--text-secondary);
+      overflow-x: auto;
+    }
+
+    .editor-line {
+      display: flex;
+      gap: 16px;
+      white-space: nowrap;
+    }
+
+    .ln {
+      width: 16px;
+      text-align: right;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .tok-com {
+      color: var(--text-muted);
+    }
+
+    .tok-err-underline {
+      color: var(--danger);
+      text-decoration: underline;
+      text-decoration-style: wavy;
+      text-underline-offset: 3px;
+    }
+
+    .editor-result {
+      margin-top: 22px;
+      padding: 12px 14px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      display: flex;
+      align-items: center;
+      gap: 9px;
+
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+
+      font-size: 11px;
+    }
+
+    .editor-result b {
+      color: var(--text);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .dot-red {
+      background: var(--danger);
+    }
+
+    .dot-blue {
+      background: var(--accent);
+    }
+
+    .dot-amber {
+      background: var(--warning);
+    }
+
+    .dot-green {
+      background: var(--success);
+    }
+
+    /* =========================================
+       SECTIONS
+    ========================================= */
+
+    .section {
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+
+    .gutter-row {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 25px;
+    }
+
+    .gutter-num {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding-top: 4px;
+    }
+
+    .section-head {
+      max-width: 800px;
+      margin-bottom: 28px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(25px, 3vw, 38px);
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+    }
+
+    html[dir="rtl"] .section-head h2 {
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      margin: 13px 0 0;
+      color: var(--text-secondary);
+      line-height: 1.9;
+      font-size: 14px;
+    }
+
+    /* =========================================
+       CARDS
+    ========================================= */
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .feature-card,
+    .about-block,
+    .analyzer-shell,
+    .tool-workspace {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+    }
+
+    .feature-card {
+      padding: 22px;
+    }
+
+    .feature-card h3 {
+      margin: 15px 0 7px;
+      font-size: 15px;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.8;
+      margin: 0;
+    }
+
+    .icon-dot {
+      height: 30px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* =========================================
+       ANALYZER
+    ========================================= */
+
+    .analyzer-shell {
+      overflow: hidden;
+    }
+
+    .analyzer-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 12px;
+      padding: 12px;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toolbar-tabs {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-tab {
+      border: 1px solid transparent;
+      background: transparent;
+
+      color: var(--text-secondary);
+
+      padding: 8px 11px;
+      border-radius: 7px;
+
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .toolbar-tab:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .toolbar-tab.active {
+      background: var(--bg-secondary);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-lang {
+      min-width: 150px;
+
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text);
+
+      border-radius: 8px;
+      padding: 8px 10px;
+
+      outline: none;
+    }
+
+    .analyzer-input {
+      width: 100%;
+      min-height: 300px;
+
+      box-sizing: border-box;
+      resize: vertical;
+
+      border: 0;
+      outline: none;
+
+      background: var(--bg);
+      color: var(--text);
+
+      padding: 20px;
+
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+
+      direction: ltr;
+      text-align: left;
+    }
+
+    .analyzer-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .analyzer-footer {
+      padding: 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 12px;
+
+      border-top: 1px solid var(--border);
+    }
+
+    .check-inline {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    /* =========================================
+       TOOLS
+    ========================================= */
+
+    .tool-workspace {
+      padding: 18px;
+    }
+
+    .tool-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .tool-col-label {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    #tool-input,
+    #tool-output {
+      width: 100%;
+      min-height: 220px;
+
+      box-sizing: border-box;
+
+      resize: vertical;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--bg);
+      color: var(--text);
+
+      padding: 13px;
+
+      outline: none;
+
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* =========================================
+       HISTORY
+    ========================================= */
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    /* =========================================
+       ABOUT
+    ========================================= */
+
+    .about-block {
+      padding: 28px;
+    }
+
+    .about-block p {
+      color: var(--text-secondary);
+      line-height: 2;
+      font-size: 14px;
+    }
+
+    .about-block h3 {
+      margin-top: 30px;
+      margin-bottom: 7px;
+      font-size: 17px;
+    }
+
+    .principle-row {
+      display: grid;
+      grid-template-columns: 45px 1fr;
+      gap: 15px;
+
+      padding: 18px 0;
+
+      border-top: 1px solid var(--border);
+
+      color: var(--text-secondary);
+      line-height: 1.9;
+      font-size: 13px;
+    }
+
+    .principle-num {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .principle-row b {
+      color: var(--text);
+    }
+
+    /* =========================================
+       FOOTER
+    ========================================= */
+
+    .site-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .footer-inner {
+      min-height: 80px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 20px;
+    }
+
+    .footer-note {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* =========================================
+       TOAST
+    ========================================= */
+
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+
+      transform: translateX(-50%) translateY(20px);
+
+      background: var(--surface);
+      color: var(--text);
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      padding: 10px 16px;
+
+      opacity: 0;
+      pointer-events: none;
+
+      transition: 0.25s ease;
+
+      z-index: 9999;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* =========================================
+       RTL
+    ========================================= */
+
+    html[dir="rtl"] body {
+      text-align: right;
+    }
+
+    html[dir="rtl"] .hero-ctas,
+    html[dir="rtl"] .hero-meta {
+      justify-content: flex-start;
+    }
+
+    /* Code areas remain LTR */
+    html[dir="rtl"] textarea,
+    html[dir="rtl"] pre,
+    html[dir="rtl"] code,
+    html[dir="rtl"] .editor-card,
+    html[dir="rtl"] .analyzer-input,
+    html[dir="rtl"] #tool-input,
+    html[dir="rtl"] #tool-output {
+      direction: ltr;
+      text-align: left;
+    }
+
+    /* =========================================
+       RESPONSIVE
+    ========================================= */
+
+    @media (max-width: 1000px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        min-height: 64px;
+      }
+
+      .main-nav {
+        display: none;
+      }
+
+      .nav-toggle {
+        display: inline-flex;
+      }
+
+      .mobile-nav {
+        padding: 8px 16px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--bg);
+      }
+
+      .mobile-nav.open {
+        display: grid;
+        gap: 4px;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 55px;
+        padding-bottom: 55px;
+      }
+
+      .hero-grid {
+        gap: 40px;
+      }
+
+      .gutter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .gutter-num {
+        display: none;
+      }
+
+      .section {
+        padding-top: 55px;
+        padding-bottom: 55px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analyzer-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .select-lang {
+        width: 100%;
+      }
+
+      .analyzer-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .analyzer-footer > div {
+        justify-content: stretch;
+      }
+
+      .analyzer-footer .btn {
+        flex: 1;
+      }
+
+      .tool-workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .header-actions {
+        gap: 5px;
+      }
+
+      .header-actions .btn {
+        padding-inline: 9px;
+      }
+
+      #btn-header-analyze .btn-label {
+        display: none;
+      }
+
+      .hero-title {
+        font-size: 40px;
+      }
+
+      .hero-ctas {
+        flex-direction: column;
+      }
+
+      .hero-ctas .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="site-header">
+
+  <div class="container header-inner">
+
+    <!-- BRAND -->
+    <div class="brand">
+
+      <span class="brand-mark" aria-hidden="true">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 26 26"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            x="1"
+            y="1"
+            width="24"
+            height="24"
+            rx="6"
+            fill="#171c27"
+            stroke="#232a38"
+          />
+
+          <path
+            d="M8 8L6 13L8 18"
+            stroke="#6c9bff"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+          <path
+            d="M18 8L20 13L18 18"
+            stroke="#6c9bff"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+          <circle
+            cx="13"
+            cy="13"
+            r="2.1"
+            fill="#ffb454"
+          />
+        </svg>
+      </span>
+
+      DevLens
+
+      <span class="brand-sub">
+        / smart debugging toolkit
+      </span>
+
+    </div>
+
+    <!-- DESKTOP NAV -->
+    <nav class="main-nav" aria-label="منوی اصلی">
+
+      <a
+        href="#home"
+        data-view="home"
+        data-fa="خانه"
+        data-en="Home"
+      >
+        خانه
+      </a>
+
+      <a
+        href="#analyze"
+        data-view="analyzer"
+        data-fa="تحلیل"
+        data-en="Analyze"
+      >
+        تحلیل
+      </a>
+
+      <a
+        href="#tools"
+        data-view="tools"
+        data-fa="ابزارها"
+        data-en="Tools"
+      >
+        ابزارها
+      </a>
+
+      <a
+        href="#history"
+        data-view="history"
+        data-fa="تاریخچه"
+        data-en="History"
+      >
+        تاریخچه
+      </a>
+
+      <a
+        href="#about"
+        data-view="about"
+        data-fa="درباره"
+        data-en="About"
+      >
+        درباره
+      </a>
+
+    </nav>
+
+    <!-- HEADER ACTIONS -->
+    <div class="header-actions">
+
+      <!-- LANGUAGE -->
+      <button
+        class="btn btn-ghost"
+        id="btn-language"
+        type="button"
+        aria-label="تغییر زبان"
+      >
+        EN
+      </button>
+
+      <!-- THEME -->
+      <button
+        class="btn btn-ghost"
+        id="btn-theme"
+        type="button"
+        aria-label="تغییر تم"
+      >
+        ☀️
+      </button>
+
+      <!-- ANALYZE -->
+      <button
+        class="btn btn-primary"
+        id="btn-header-analyze"
+        type="button"
+      >
+        <span aria-hidden="true">🔍</span>
+
+        <span
+          class="btn-label"
+          data-fa="تحلیل خطا"
+          data-en="Analyze"
+        >
+          تحلیل خطا
+        </span>
+      </button>
+
+      <!-- MOBILE MENU -->
+      <button
+        class="btn btn-ghost nav-toggle"
+        id="nav-toggle"
+        type="button"
+        aria-label="باز کردن منو"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- MOBILE NAV -->
+  <nav
+    class="mobile-nav"
+    id="mobile-nav"
+    aria-label="منوی موبایل"
+  >
+
+    <a
+      href="#home"
+      data-view="home"
+      data-fa="خانه"
+      data-en="Home"
+    >
+      خانه
+    </a>
+
+    <a
+      href="#analyze"
+      data-view="analyzer"
+      data-fa="تحلیل"
+      data-en="Analyze"
+    >
+      تحلیل
+    </a>
+
+    <a
+      href="#tools"
+      data-view="tools"
+      data-fa="ابزارها"
+      data-en="Tools"
+    >
+      ابزارها
+    </a>
+
+    <a
+      href="#history"
+      data-view="history"
+      data-fa="تاریخچه"
+      data-en="History"
+    >
+      تاریخچه
+    </a>
+
+    <a
+      href="#about"
+      data-view="about"
+      data-fa="درباره"
+      data-en="About"
+    >
+      درباره
+    </a>
+
+  </nav>
+
+</header>
+
+
+<main>
+
+  <!-- =====================================================
+       HOME
+  ====================================================== -->
+
+  <section class="view active" id="view-home">
+
+    <div class="container hero">
+
+      <div class="hero-grid">
+
+        <!-- HERO CONTENT -->
+        <div>
+
+          <div
+            class="eyebrow"
+            data-fa="قانون‌محور · اجرا در مرورگر · بدون نیاز به API Key"
+            data-en="Rule-based · runs in your browser · no API key needed"
+          >
+            قانون‌محور · اجرا در مرورگر · بدون نیاز به API Key
+          </div>
+
+          <h1
+            class="hero-title"
+            data-fa="باگ را پیدا کن.<br>درکش کن.<br><span class='accent'>حلش کن.</span>"
+            data-en="Find the bug.<br>Understand it.<br><span class='accent'>Fix it.</span>"
+          >
+            باگ را پیدا کن.<br>
+            درکش کن.<br>
+            <span class="accent">حلش کن.</span>
+          </h1>
+
+          <p
+            class="hero-lede"
+            data-fa="یک خطا، Stack Trace یا بخشی از کد را وارد کن. DevLens زبان برنامه‌نویسی را تشخیص می‌دهد، مشکل را پیدا می‌کند، علت را به زبان ساده توضیح می‌دهد و راه‌حل پیشنهاد می‌کند؛ کاملاً آفلاین و روی دستگاه خودت."
+            data-en="Paste an error, a stack trace, or a snippet of code. DevLens detects the language, locates the problem, explains the cause in plain language, and suggests a fix — entirely offline, on your own device."
+          >
+            یک خطا، Stack Trace یا بخشی از کد را وارد کن. DevLens زبان برنامه‌نویسی را تشخیص می‌دهد، مشکل را پیدا می‌کند، علت را به زبان ساده توضیح می‌دهد و راه‌حل پیشنهاد می‌کند؛ کاملاً آفلاین و روی دستگاه خودت.
+          </p>
+
+          <div class="hero-ctas">
+
+            <button
+              class="btn btn-primary"
+              data-goto="analyzer"
+              data-fa="🔍 تحلیل یک خطا"
+              data-en="🔍 Analyze an error"
+            >
+              🔍 تحلیل یک خطا
+            </button>
+
+            <button
+              class="btn"
+              data-goto="tools"
+              data-fa="مرور ابزارهای توسعه"
+              data-en="Browse dev tools"
+            >
+              مرور ابزارهای توسعه
+            </button>
+
+          </div>
+
+          <div class="hero-meta">
+
+            <span>
+              <b>12+</b>
+
+              <span
+                data-fa="زبان و فریم‌ورک"
+                data-en="languages & frameworks"
+              >
+                زبان و فریم‌ورک
+              </span>
+            </span>
+
+            <span>
+              <b>0</b>
+
+              <span
+                data-fa="داده‌ای از مرورگر خارج نمی‌شود"
+                data-en="data leaves your browser"
+              >
+                داده‌ای از مرورگر خارج نمی‌شود
+              </span>
+            </span>
+
+            <span>
+              <b>&lt; 1s</b>
+
+              <span
+                data-fa="زمان تحلیل"
+                data-en="analysis time"
+              >
+                زمان تحلیل
+              </span>
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- EDITOR -->
+        <div class="editor-card">
+
+          <div class="editor-tabbar">
+
+            <div class="editor-tab active">
+              error.log
+            </div>
+
+            <div class="editor-tab">
+              app.js
+            </div>
+
+          </div>
+
+          <div class="editor-body">
+
+            <div class="editor-line">
+              <span class="ln">1</span>
+
+              <span>
+                <span class="tok-com">
+                  // pasted into DevLens
+                </span>
+              </span>
+            </div>
+
+            <div class="editor-line">
+              <span class="ln">2</span>
+
+              <span>
+                <span class="tok-err-underline">
+                  Uncaught TypeError
+                </span>
+                : Cannot read properties of undefined
+                (reading 'name')
+              </span>
+            </div>
+
+            <div class="editor-line">
+              <span class="ln">3</span>
+
+              <span>
+                at app.js:42:15
+              </span>
+            </div>
+
+            <div class="editor-result">
+
+              <span
+                class="dot dot-red"
+                aria-hidden="true"
+              ></span>
+
+              <span
+                data-fa="تشخیص داده شد — TypeError · JavaScript · app.js:42:15 · سطح: خطا"
+                data-en="Detected — TypeError · JavaScript · app.js:42:15 · Severity: Error"
+              >
+                تشخیص داده شد — <b>TypeError</b>
+                · JavaScript ·
+                <b>app.js:42:15</b>
+                · سطح: خطا
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- COVERAGE -->
+
+    <div class="container section" id="languages">
+
+      <div class="gutter-row">
+
+        <div class="gutter-num">
+          01
+        </div>
+
+        <div>
+
+          <div class="section-head">
+
+            <div
+              class="eyebrow"
+              data-fa="پشتیبانی"
+              data-en="Coverage"
+            >
+              پشتیبانی
+            </div>
+
+            <h2
+              data-fa="ساخته شده برای تکنولوژی‌هایی که واقعاً استفاده می‌کنی"
+              data-en="Built for the stack you actually use"
+            >
+              ساخته شده برای تکنولوژی‌هایی که واقعاً استفاده می‌کنی
+            </h2>
+
+            <p
+              data-fa="فرانت‌اند، بک‌اند، دیتابیس و کنترل نسخه — یک تحلیلگر برای خطاهایی که در تمام پروژه‌ات ظاهر می‌شوند."
+              data-en="Frontend, backend, database, and version control — one analyzer for the errors that show up across your whole project."
+            >
+              فرانت‌اند، بک‌اند، دیتابیس و کنترل نسخه — یک تحلیلگر برای خطاهایی که در تمام پروژه‌ات ظاهر می‌شوند.
+            </p>
+
+          </div>
+
+          <div
+            class="card-grid"
+            id="lang-card-grid"
+          ></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- HOW IT WORKS -->
+
+    <div
+      class="container section"
+      id="how-it-works"
+    >
+
+      <div class="gutter-row">
+
+        <div class="gutter-num">
+          02
+        </div>
+
+        <div>
+
+          <div class="section-head">
+
+            <div
+              class="eyebrow"
+              data-fa="نحوه کار"
+              data-en="How it works"
+            >
+              نحوه کار
+            </div>
+
+            <h2
+              data-fa="خطا → تحلیل → علت → راه‌حل"
+              data-en="Error → Analysis → Cause → Solution"
+            >
+              خطا → تحلیل → علت → راه‌حل
+            </h2>
+
+            <p
+              data-fa="هر تحلیل یک مسیر مشخص را طی می‌کند؛ بنابراین نتیجه فقط یک پیام قرمز نیست، بلکه یک تشخیص واقعی است."
+              data-en="Every analysis walks the same path, so the result is never just a red message — it's a diagnosis."
+            >
+              هر تحلیل یک مسیر مشخص را طی می‌کند؛ بنابراین نتیجه فقط یک پیام قرمز نیست، بلکه یک تشخیص واقعی است.
+            </p>
+
+          </div>
+
+
+          <div class="card-grid">
+
+            <div class="feature-card">
+
+              <div class="icon-dot">
+                <span class="dot dot-blue"></span>
+              </div>
+
+              <h3
+                data-fa="تشخیص"
+                data-en="Detect"
+              >
+                تشخیص
+              </h3>
+
+              <p
+                data-fa="نوع خطا و زبان یا فریم‌ورکی که خطا به آن مربوط است را شناسایی کن."
+                data-en="Identify the error type and the language or framework it belongs to."
+              >
+                نوع خطا و زبان یا فریم‌ورکی که خطا به آن مربوط است را شناسایی کن.
+              </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+              <div class="icon-dot">
+                <span class="dot dot-amber"></span>
+              </div>
+
+              <h3
+                data-fa="مکان‌یابی"
+                data-en="Locate"
+              >
+                مکان‌یابی
+              </h3>
+
+              <p
+                data-fa="فایل، خط و ستون را مستقیماً از Stack Trace استخراج کن."
+                data-en="Pull the file, line, and column straight out of the stack trace."
+              >
+                فایل، خط و ستون را مستقیماً از Stack Trace استخراج کن.
+              </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+              <div class="icon-dot">
+                <span class="dot dot-red"></span>
+              </div>
+
+              <h3
+                data-fa="توضیح"
+                data-en="Explain"
+              >
+                توضیح
+              </h3>
+
+              <p
+                data-fa="علت احتمالی را با زبان فنی یا به زبان ساده توضیح بده."
+                data-en="Describe the likely cause — in technical terms, or in plain language."
+              >
+                علت احتمالی را با زبان فنی یا به زبان ساده توضیح بده.
+              </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+              <div class="icon-dot">
+                <span class="dot dot-green"></span>
+              </div>
+
+              <h3
+                data-fa="رفع"
+                data-en="Fix"
+              >
+                رفع
+              </h3>
+
+              <p
+                data-fa="یک قدم عملی برای رفع مشکل و در صورت امکان نسخه اصلاح‌شده کد دریافت کن."
+                data-en="Get a concrete next step, and a corrected code snippet when possible."
+              >
+                یک قدم عملی برای رفع مشکل و در صورت امکان نسخه اصلاح‌شده کد دریافت کن.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ANALYZER
+  ====================================================== -->
+
+  <section
+    class="view"
+    id="view-analyzer"
+  >
+
+    <div class="container section">
+
+      <div class="section-head">
+
+        <div
+          class="eyebrow"
+          data-fa="تحلیل"
+          data-en="Analyze"
+        >
+          تحلیل
+        </div>
+
+        <h2
+          data-fa="خطا، کد یا Stack Trace — DevLens هر سه را می‌خواند"
+          data-en="Error, code, or stack trace — DevLens reads all three"
+        >
+          خطا، کد یا Stack Trace — DevLens هر سه را می‌خواند
+        </h2>
+
+        <p
+          data-fa="هیچ چیزی که اینجا وارد می‌کنی از مرورگرت خارج نمی‌شود. تحلیل توسط موتور قوانین محلی انجام می‌شود، نه یک سرور خارجی."
+          data-en="Nothing you paste here leaves your browser. Analysis runs against a local rule engine, not a remote server."
+        >
+          هیچ چیزی که اینجا وارد می‌کنی از مرورگرت خارج نمی‌شود. تحلیل توسط موتور قوانین محلی انجام می‌شود، نه یک سرور خارجی.
+        </p>
+
+      </div>
+
+
+      <div class="analyzer-shell">
+
+        <div class="analyzer-toolbar">
+
+          <div
+            class="toolbar-tabs"
+            role="tablist"
+          >
+
+            <button
+              class="toolbar-tab active"
+              data-mode="error"
+              role="tab"
+              data-fa="🔍 تحلیلگر خطا"
+              data-en="🔍 Error Analyzer"
+            >
+              🔍 تحلیلگر خطا
+            </button>
+
+            <button
+              class="toolbar-tab"
+              data-mode="code"
+              role="tab"
+              data-fa="🧠 تحلیلگر کد"
+              data-en="🧠 Code Analyzer"
+            >
+              🧠 تحلیلگر کد
+            </button>
+
+            <button
+              class="toolbar-tab"
+              data-mode="stack"
+              role="tab"
+              data-fa="📋 Stack Trace"
+              data-en="📋 Stack Trace"
+            >
+              📋 Stack Trace
+            </button>
+
+          </div>
+
+
+          <div class="select-wrap">
+
+            <select
+              id="lang-select"
+              class="select-lang"
+              aria-label="زبان"
+            ></select>
+
+          </div>
+
+        </div>
+
+
+        <textarea
+          class="analyzer-input"
+          id="analyzer-input"
+          data-placeholder-fa="خطا، کد یا Stack Trace خود را اینجا وارد کنید...&#10;&#10;مثلاً: Uncaught TypeError: Cannot read properties of undefined (reading 'name')&#10;    at app.js:42:15"
+          data-placeholder-en="Paste your error, code, or stack trace here...&#10;&#10;e.g. Uncaught TypeError: Cannot read properties of undefined (reading 'name')&#10;    at app.js:42:15"
+          placeholder="خطا، کد یا Stack Trace خود را اینجا وارد کنید..."
+        ></textarea>
+
+
+        <div class="analyzer-footer">
+
+          <label class="check-inline">
+
+            <input
+              type="checkbox"
+              id="explain-simply-toggle"
+            >
+
+            <span
+              data-fa="توضیح ساده"
+              data-en="Explain Simply"
+            >
+              توضیح ساده
+            </span>
+
+          </label>
+
+
+          <div
+            style="display:flex; gap:10px;"
+          >
+
+            <button
+              class="btn"
+              id="btn-clear"
+              data-fa="پاک کردن"
+              data-en="Clear"
+            >
+              پاک کردن
+            </button>
+
+            <button
+              class="btn btn-primary"
+              id="btn-analyze"
+              data-fa="🔍 تحلیل"
+              data-en="🔍 Analyze"
+            >
+              🔍 تحلیل
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="result-wrap"
+        id="result-wrap"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       TOOLS
+  ====================================================== -->
+
+  <section
+    class="view"
+    id="view-tools"
+  >
+
+    <div class="container section">
+
+      <div class="section-head">
+
+        <div
+          class="eyebrow"
+          data-fa="ابزارهای توسعه"
+          data-en="Developer Tools"
+        >
+          ابزارهای توسعه
+        </div>
+
+        <h2
+          data-fa="ابزارهای کوچک، همیشه در دسترس"
+          data-en="Small utilities, always at hand"
+        >
+          ابزارهای کوچک، همیشه در دسترس
+        </h2>
+
+        <p
+          data-fa="ساختار ماژولار است؛ ابزارهای بیشتری در آینده اضافه می‌شوند بدون اینکه بخش‌های دیگر DevLens را تغییر دهند."
+          data-en="Modular by design — more tools land here over time without touching the rest of DevLens."
+        >
+          ساختار ماژولار است؛ ابزارهای بیشتری در آینده اضافه می‌شوند بدون اینکه بخش‌های دیگر DevLens را تغییر دهند.
+        </p>
+
+      </div>
+
+
+      <div
+        class="card-grid"
+        id="tools-grid"
+      ></div>
+
+
+      <div
+        id="tool-workspace-wrap"
+        class="hidden"
+        style="margin-top:22px;"
+      >
+
+        <div
+          class="section-head"
+          style="margin-bottom:14px;"
+        >
+
+          <h3
+            id="tool-workspace-title"
+            style="font-family:var(--font-mono); font-size:16px;"
+          ></h3>
+
+        </div>
+
+
+        <div
+          id="tool-mode-toggle"
+          style="margin-bottom:12px; display:none; gap:8px;"
+        >
+
+          <button
+            class="btn toolbar-tab active"
+            data-tool-mode="encode"
+            data-fa="Encode"
+            data-en="Encode"
+          >
+            Encode
+          </button>
+
+          <button
+            class="btn toolbar-tab"
+            data-tool-mode="decode"
+            data-fa="Decode"
+            data-en="Decode"
+          >
+            Decode
+          </button>
+
+        </div>
+
+
+        <div class="tool-workspace">
+
+          <div>
+
+            <div
+              class="tool-col-label"
+              data-fa="ورودی"
+              data-en="Input"
+            >
+              ورودی
+            </div>
+
+            <textarea
+              id="tool-input"
+              placeholder=""
+            ></textarea>
+
+          </div>
+
+
+          <div>
+
+            <div
+              class="tool-col-label"
+              data-fa="خروجی"
+              data-en="Output"
+            >
+              خروجی
+            </div>
+
+            <textarea
+              id="tool-output"
+              placeholder=""
+              readonly
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div
+          style="margin-top:12px; display:flex; gap:10px;"
+        >
+
+          <button
+            class="btn btn-primary"
+            id="btn-tool-run"
+            data-fa="اجرا"
+            data-en="Run"
+          >
+            اجرا
+          </button>
+
+          <button
+            class="btn"
+            id="btn-tool-copy"
+            data-fa="کپی خروجی"
+            data-en="Copy output"
+          >
+            کپی خروجی
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       HISTORY
+  ====================================================== -->
+
+  <section
+    class="view"
+    id="view-history"
+  >
+
+    <div class="container section">
+
+      <div
+        class="section-head"
+        style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px;"
+      >
+
+        <div>
+
+          <div
+            class="eyebrow"
+            data-fa="تاریخچه"
+            data-en="History"
+          >
+            تاریخچه
+          </div>
+
+          <h2
+            data-fa="فقط روی همین دستگاه ذخیره می‌شود"
+            data-en="Saved on this device only"
+          >
+            فقط روی همین دستگاه ذخیره می‌شود
+          </h2>
+
+          <p
+            data-fa="تاریخچه در localStorage مرورگر ذخیره می‌شود و هیچ‌وقت جایی آپلود نمی‌شود. هر زمان خواستی آن را پاک کن."
+            data-en="History is stored in your browser's localStorage — never uploaded anywhere. Clear it any time."
+          >
+            تاریخچه در localStorage مرورگر ذخیره می‌شود و هیچ‌وقت جایی آپلود نمی‌شود. هر زمان خواستی آن را پاک کن.
+          </p>
+
+        </div>
+
+
+        <button
+          class="btn"
+          id="btn-clear-history"
+          data-fa="پاک کردن همه"
+          data-en="Clear all"
+        >
+          پاک کردن همه
+        </button>
+
+      </div>
+
+
+      <div
+        class="history-list"
+        id="history-list"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ABOUT
+  ====================================================== -->
+
+  <section
+    class="view"
+    id="view-about"
+  >
+
+    <div class="container section">
+
+      <div class="section-head">
+
+        <div
+          class="eyebrow"
+          data-fa="درباره"
+          data-en="About"
+        >
+          درباره
+        </div>
+
+        <h2
+          data-fa="DevLens چیست و چه چیزی نیست؟"
+          data-en="What DevLens is — and isn't"
+        >
+          DevLens چیست و چه چیزی نیست؟
+        </h2>
+
+      </div>
+
+
+      <div class="about-block">
+
+        <p
+          data-fa="DevLens یک پلتفرم برای دیباگ و ابزارهای توسعه‌دهندگان است. یک خطا، Stack Trace یا قطعه‌ای از کد را دریافت می‌کند و همیشه یک مسیر مشخص را طی می‌کند: تشخیص زبان و نوع خطا → پیدا کردن مشکل → توضیح علت → پیشنهاد راه‌حل."
+          data-en="DevLens is a developer debugging & utility platform. It reads an error, a stack trace, or a code snippet, and walks the same path every time: detect the language and error type → locate the problem → explain the cause → suggest a fix."
+        >
+          DevLens یک پلتفرم برای دیباگ و ابزارهای توسعه‌دهندگان است. یک خطا، Stack Trace یا قطعه‌ای از کد را دریافت می‌کند و همیشه یک مسیر مشخص را طی می‌کند: تشخیص زبان و نوع خطا → پیدا کردن مشکل → توضیح علت → پیشنهاد راه‌حل.
+        </p>
+
+
+        <h3
+          data-fa="طراحی شده بر پایه قوانین"
+          data-en="Rule-based by design"
+        >
+          طراحی شده بر پایه قوانین
+        </h3>
+
+        <p
+          data-fa="نسخه اول DevLens کاملاً روی یک موتور قوانین محلی اجرا می‌شود؛ مجموعه‌ای ماژولار از الگوها برای خطاهای رایج JavaScript، TypeScript، React، Vue، PHP، Laravel، Node.js، Python، Java، C#، SQL، JSON و Git. بدون API خارجی، بدون API Key و بدون نیاز به درخواست شبکه."
+          data-en="The first version of DevLens runs entirely on a local rule engine — a modular set of pattern-matchers for common errors across JavaScript, TypeScript, React, Vue, PHP, Laravel, Node.js, Python, Java, C#, SQL, JSON, and Git. No external API, no API key, no network request required to get an answer."
+        >
+          نسخه اول DevLens کاملاً روی یک موتور قوانین محلی اجرا می‌شود؛ مجموعه‌ای ماژولار از الگوها برای خطاهای رایج JavaScript، TypeScript، React، Vue، PHP، Laravel، Node.js، Python، Java، C#، SQL، JSON و Git. بدون API خارجی، بدون API Key و بدون نیاز به درخواست شبکه.
+        </p>
+
+
+        <h3
+          data-fa="ساخته شده برای رشد"
+          data-en="Built to grow"
+        >
+          ساخته شده برای رشد
+        </h3>
+
+        <p
+          data-fa="معماری پروژه امکان اضافه شدن حالت تحلیل با کمک هوش مصنوعی را در آینده فراهم می‌کند، بدون اینکه بخش‌های دیگر برنامه به آن وابسته باشند. اگر چنین حالتی اضافه شود، کلید API پشت Backend یا Serverless Function قرار خواهد گرفت و هرگز داخل Frontend قرار نمی‌گیرد."
+          data-en="The architecture keeps room for an optional AI-assisted analysis mode later, without the rest of the app depending on it. If that mode ships, any API key will live behind a backend or serverless function — never inside the frontend."
+        >
+          معماری پروژه امکان اضافه شدن حالت تحلیل با کمک هوش مصنوعی را در آینده فراهم می‌کند، بدون اینکه بخش‌های دیگر برنامه به آن وابسته باشند. اگر چنین حالتی اضافه شود، کلید API پشت Backend یا Serverless Function قرار خواهد گرفت و هرگز داخل Frontend قرار نمی‌گیرد.
+        </p>
+
+
+        <h3
+          data-fa="اصول"
+          data-en="Principles"
+        >
+          اصول
+        </h3>
+
+
+        <div class="principle-row">
+
+          <div class="principle-num">
+            01
+          </div>
+
+          <div
+            data-fa="<b>حریم خصوصی اولویت دارد.</b> کدها و خطاهای شما در مرورگر پردازش می‌شوند و تا زمانی که خودتان حالت AI را در نسخه آینده انتخاب نکنید، به سروری ارسال نمی‌شوند."
+            data-en="<b>Privacy first.</b> Your code and errors are processed in your browser and are not sent to a server unless you explicitly choose an AI mode in a future version."
+          >
+            <b>حریم خصوصی اولویت دارد.</b>
+            کدها و خطاهای شما در مرورگر پردازش می‌شوند و تا زمانی که خودتان حالت AI را در نسخه آینده انتخاب نکنید، به سروری ارسال نمی‌شوند.
+          </div>
+
+        </div>
+
+
+        <div class="principle-row">
+
+          <div class="principle-num">
+            02
+          </div>
+
+          <div
+            data-fa="<b>توضیح ساده، در صورت نیاز.</b> گزینه «توضیح ساده» علت فنی را به یک جمله قابل فهم تبدیل می‌کند."
+            data-en="<b>Plain language, on request.</b> Explain Simply turns a technical cause into one plain sentence."
+          >
+            <b>توضیح ساده، در صورت نیاز.</b>
+            گزینه «توضیح ساده» علت فنی را به یک جمله قابل فهم تبدیل می‌کند.
+          </div>
+
+        </div>
+
+
+        <div class="principle-row">
+
+          <div class="principle-num">
+            03
+          </div>
+
+          <div
+            data-fa="<b>ماژولار.</b> قوانین، ابزارها و پشتیبانی از زبان‌ها به شکلی طراحی شده‌اند که بتوانند مستقل از یکدیگر توسعه پیدا کنند."
+            data-en="<b>Modular.</b> Rules, tools, and language support are designed to be extended independently."
+          >
+            <b>ماژولار.</b>
+            قوانین، ابزارها و پشتیبانی از زبان‌ها به شکلی طراحی شده‌اند که بتوانند مستقل از یکدیگر توسعه پیدا کنند.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer class="site-footer">
+
+  <div class="container footer-inner">
+
+    <div
+      class="footer-note"
+      data-fa="DevLens — مستقیماً در مرورگر شما اجرا می‌شود. هیچ خطا یا کدی که وارد می‌کنید به سرور ارسال نمی‌شود."
+      data-en="DevLens — runs locally in your browser. No error or code you paste is sent to a server."
+    >
+      DevLens — مستقیماً در مرورگر شما اجرا می‌شود. هیچ خطا یا کدی که وارد می‌کنید به سرور ارسال نمی‌شود.
+    </div>
+
+    <div
+      class="footer-note"
+      data-fa="موتور قانون‌محور · نسخه 1.0"
+      data-en="Rule-based engine · v1.0"
+    >
+      موتور قانون‌محور · نسخه 1.0
+    </div>
+
+  </div>
+
+</footer>
+
+
+<!-- TOAST -->
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+
+<!-- =====================================================
+     SCRIPTS
+====================================================== -->
+
+<script src="data/errors.js"></script>
+<script src="js/detector.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/history.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/app.js"></script>
+
+
+<!-- =====================================================
+     LANGUAGE + THEME SYSTEM
+====================================================== -->
+
+<script>
+
+  /* =========================================
+     LANGUAGE
+  ========================================= */
+
+  const languageButton =
+    document.getElementById("btn-language");
+
+  let currentLanguage =
+    localStorage.getItem("devlens-language") || "fa";
+
+
+  function applyLanguage() {
+
+    const isPersian =
+      currentLanguage === "fa";
+
+    /* HTML direction */
+    document.documentElement.lang =
+      isPersian ? "fa" : "en";
+
+    document.documentElement.dir =
+      isPersian ? "rtl" : "ltr";
+
+
+    /* Body classes */
+    document.body.classList.toggle(
+      "rtl",
+      isPersian
+    );
+
+    document.body.classList.toggle(
+      "ltr",
+      !isPersian
+    );
+
+
+    /* Text translation */
+    document
+      .querySelectorAll("[data-fa][data-en]")
+      .forEach((element) => {
+
+        element.innerHTML =
+          isPersian
+            ? element.dataset.fa
+            : element.dataset.en;
+
+      });
+
+
+    /* Placeholder translation */
+    const analyzerInput =
+      document.getElementById(
+        "analyzer-input"
+      );
+
+    if (analyzerInput) {
+
+      analyzerInput.placeholder =
+        isPersian
+          ? analyzerInput.dataset.placeholderFa
+          : analyzerInput.dataset.placeholderEn;
+
+    }
+
+
+    /* Language button */
+    if (languageButton) {
+
+      languageButton.textContent =
+        isPersian ? "EN" : "FA";
+
+      languageButton.setAttribute(
+        "aria-label",
+        isPersian
+          ? "Switch to English"
+          : "تغییر به فارسی"
+      );
+
+    }
+
+
+    /* Save */
+    localStorage.setItem(
+      "devlens-language",
+      currentLanguage
+    );
+
+  }
+
+
+  languageButton?.addEventListener(
+    "click",
+    () => {
+
+      currentLanguage =
+        currentLanguage === "fa"
+          ? "en"
+          : "fa";
+
+      applyLanguage();
+
+    }
+  );
+
+
+  /* =========================================
+     THEME
+  ========================================= */
+
+  const themeButton =
+    document.getElementById("btn-theme");
+
+  let currentTheme =
+    localStorage.getItem("devlens-theme") ||
+    "dark";
+
+
+  function applyTheme() {
+
+    document.documentElement.dataset.theme =
+      currentTheme;
+
+
+    if (themeButton) {
+
+      themeButton.textContent =
+        currentTheme === "dark"
+          ? "☀️"
+          : "🌙";
+
+
+      themeButton.setAttribute(
+        "aria-label",
+        currentTheme === "dark"
+          ? "Switch to light mode"
+          : "Switch to dark mode"
+      );
+
+    }
+
+
+    localStorage.setItem(
+      "devlens-theme",
+      currentTheme
+    );
+
+  }
+
+
+  themeButton?.addEventListener(
+    "click",
+    () => {
+
+      currentTheme =
+        currentTheme === "dark"
+          ? "light"
+          : "dark";
+
+      applyTheme();
+
+    }
+  );
+
+
+  /* =========================================
+     MOBILE MENU
+  ========================================= */
+
+  const navToggle =
+    document.getElementById("nav-toggle");
+
+  const mobileNav =
+    document.getElementById("mobile-nav");
+
+
+  navToggle?.addEventListener(
+    "click",
+    () => {
+
+      const isOpen =
+        mobileNav.classList.toggle("open");
+
+      navToggle.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+
+    }
+  );
+
+
+  /* Close mobile menu after navigation */
+  document
+    .querySelectorAll(".mobile-nav a")
+    .forEach((link) => {
+
+      link.addEventListener(
+        "click",
+        () => {
+
+          mobileNav.classList.remove("open");
+
+          navToggle.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+        }
+      );
+
+    });
+
+
+  /* =========================================
+     INITIALIZE
+  ========================================= */
+
+  applyTheme();
+  applyLanguage();
+
+</script>
+
+</body>
+</html>
